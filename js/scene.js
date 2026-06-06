@@ -14,6 +14,7 @@ export class Restaurant {
     this.bar = { x: -7.5, z: -8 };       // ponto de retirada de bebidas
     this.kitchen = { x: 7.5, z: -8 };    // ponto de retirada de comidas
     this.entrance = { x: 0, z: 9.5 };    // porta principal / fila
+    this.trash = { x: 9, z: 2 };         // lixeira (lateral direita do salao)
   }
 
   // Constroi o salao para um numero de mesas. Mesas proximas + corredores estreitos.
@@ -47,6 +48,9 @@ export class Restaurant {
     // zonas: bar (esq) e cozinha (dir)
     this._zone(this.bar.x, this.bar.z, 0x335a8a, 'BAR');
     this._zone(this.kitchen.x, this.kitchen.z, 0x8a5a33, 'COZINHA');
+
+    // lixeira (lateral direita) - descarte de lixo
+    this._bin(this.trash.x, this.trash.z);
 
     // entrada (marca no chao)
     const door = new THREE.Mesh(
@@ -136,6 +140,28 @@ export class Restaurant {
     wall.receiveShadow = true;
     this.group.add(wall);
     this.colliders.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 });
+  }
+
+  _bin(x, z) {
+    const grp = new THREE.Group();
+    // corpo da lixeira
+    const body = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.45, 0.38, 1.0, 16),
+      new THREE.MeshStandardMaterial({ color: 0x2f3b2f, metalness: 0.3, roughness: 0.7 })
+    );
+    body.position.y = 0.5; body.castShadow = true;
+    grp.add(body);
+    // tampa
+    const lid = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.5, 0.5, 0.12, 16),
+      new THREE.MeshStandardMaterial({ color: 0x1f8a4c })
+    );
+    lid.position.y = 1.06;
+    grp.add(lid);
+    grp.position.set(x, 0, z);
+    this.group.add(grp);
+    // colisao
+    this.colliders.push({ minX: x - 0.5, maxX: x + 0.5, minZ: z - 0.5, maxZ: z + 0.5 });
   }
 
   _zone(x, z, color, label) {

@@ -7,7 +7,7 @@ export const CONFIG = {
   // --- Jogador ---
   walkSpeed: 3.2,
   runSpeed: 6.0,
-  turnLerp: 0.18,
+  turnLerp: 0.12,
   playerRadius: 0.45,
 
   // --- Camera (terceira pessoa atras do garcom) ---
@@ -57,6 +57,7 @@ export const ITEM_TYPES = {
   garrafa: { label: 'Garrafa', color: 0x2e7d32, liquid: true,  radius: 0.08, height: 0.34, mass: 0.7 },
   xicara:  { label: 'Xicara',  color: 0xffffff, liquid: true,  radius: 0.09, height: 0.13, mass: 0.3 },
   prato:   { label: 'Prato',   color: 0xeeeeee, liquid: false, radius: 0.16, height: 0.05, mass: 0.6 },
+  lixo:    { label: 'Lixo',    color: 0x55603a, liquid: false, radius: 0.14, height: 0.18, mass: 0.5, trash: true },
 };
 
 // Pedidos possiveis (label + item fisico que vai pra bandeja)
