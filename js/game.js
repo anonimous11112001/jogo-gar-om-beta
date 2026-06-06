@@ -91,13 +91,19 @@ export class Game {
         return { type: 'pickup-kitchen', label: 'RETIRAR PRATO', color: '#d35400' };
     }
 
-    // 3) Atender: cliente esperando e sem pedido ativo
+    // 3) Cobrar: cliente que terminou de comer e está aguardando o troco
+    for (const c of this.customers.customers) {
+      if (c.state === CState.PAYING && dist2D(px, pz, c.pos.x, c.pos.z) < R)
+        return { type: 'collect', label: 'COBRAR', color: '#f1c40f', customer: c };
+    }
+
+    // 4) Atender: cliente esperando e sem pedido ativo
     if (!this.activeOrder) {
       const c = this.customers.nearest(px, pz, [CState.WAITING], R);
       if (c) return { type: 'serve', label: 'ATENDER', color: '#ff7a00', customer: c };
     }
 
-    // 4) Limpar: mesa suja por perto
+    // 5) Limpar: mesa suja por perto
     for (const t of this.restaurant.tables) {
       if (t.dirty && dist2D(px, pz, t.x, t.z + 1.0) < R) {
         // ou perto do cliente que pagou e ja saiu (mesa suja)
@@ -140,6 +146,10 @@ export class Game {
       if (any) this.ui.toast('Itens na bandeja — equilibre!', '#9fd3ff');
     } else if (act.type === 'deliver') {
       this._deliver(act);
+    } else if (act.type === 'collect') {
+      act.customer.payAndLeave();
+      this.reputation = clamp(this.reputation + CONFIG.repGainClean, 0, CONFIG.reputationMax);
+      this.ui.toast('Obrigado! Mesa sendo liberada…', '#f1c40f');
     } else if (act.type === 'clean') {
       this.restaurant.cleanTable(act.table);
       this.reputation = clamp(this.reputation + CONFIG.repGainClean, 0, CONFIG.reputationMax);

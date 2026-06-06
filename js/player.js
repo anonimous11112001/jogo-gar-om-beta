@@ -21,10 +21,10 @@ export class Player {
     this._buildModel();
     scene.add(this.group);
 
-    // ponto onde a bandeja fica (mao a frente, acima)
+    // ponto onde a bandeja fica (mao ao lado direito, acima)
     this.trayAnchor = new THREE.Object3D();
     this.group.add(this.trayAnchor);
-    this.trayAnchor.position.set(0.0, 1.25, 0.55);
+    this.trayAnchor.position.set(0.55, 1.25, 0.0);
   }
 
   _buildModel() {
@@ -49,9 +49,9 @@ export class Player {
     this.legR = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.45, 4, 6), pants);
     this.legL.position.set(-0.14, 0.45, 0); this.legR.position.set(0.14, 0.45, 0);
     this.group.add(this.legL, this.legR);
-    // braco que segura a bandeja
+    // braco que segura a bandeja (lado direito)
     const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.08, 0.4, 4, 6), shirt);
-    arm.position.set(0.0, 1.15, 0.35); arm.rotation.x = -1.1;
+    arm.position.set(0.38, 1.1, 0.0); arm.rotation.z = -1.1;
     this.group.add(arm);
 
     this.group.position.copy(this.pos);
@@ -62,8 +62,11 @@ export class Player {
     const mag = Math.hypot(m.x, m.y);
 
     if (mag > 0.05) {
-      // direcao no plano: joystick relativo a camera (a camera olha -z do player)
-      const targetHeading = Math.atan2(m.x, m.y);
+      // Joystick relativo à câmera: rotaciona o vetor (m.x, m.y) pelo heading atual
+      // para que "cima no joystick" sempre signifique "avançar na direção atual".
+      const wx = -m.x * Math.cos(this.heading) - m.y * Math.sin(this.heading);
+      const wz =  m.x * Math.sin(this.heading) - m.y * Math.cos(this.heading);
+      const targetHeading = Math.atan2(wx, wz);
       // interpola heading pelo caminho mais curto
       let diff = targetHeading - this.heading;
       while (diff > Math.PI) diff -= Math.PI * 2;
