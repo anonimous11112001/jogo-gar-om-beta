@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#14100e" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍷</text></svg>" />
+  <title>Garçom — Desafio dos Copos</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Three.js vendorizado localmente (self-contained, sem CDN) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="game-canvas"></canvas>
+
+  <!-- ===================== HUD ===================== -->
+  <div id="hud">
+    <div class="hud-top">
+      <div class="hud-chip" id="hud-level">NÍVEL 1</div>
+      <div class="hud-chip" id="hud-money">💰 0</div>
+      <div class="hud-chip" id="hud-goal-chip">🍽️ <span id="hud-goal">0/0</span></div>
+    </div>
+
+    <div class="hud-bars">
+      <div class="bar-label">REPUTAÇÃO <span id="hud-rep-val">100%</span></div>
+      <div class="bar"><div id="hud-rep-fill" class="bar-fill" style="width:100%"></div></div>
+    </div>
+
+    <div class="hud-side">
+      <div class="hud-chip small" id="hud-orders">📋 0</div>
+      <div class="hud-chip small" id="hud-waiting">🚪 0</div>
+      <div class="hud-chip small combo" id="hud-combo"></div>
+    </div>
+
+    <!-- Equilibrio da bandeja -->
+    <div id="balance-wrap">
+      <div class="balance-title">EQUILÍBRIO</div>
+      <div id="balance-bar">
+        <div class="balance-zone red"></div>
+        <div class="balance-zone green"></div>
+        <div class="balance-zone red"></div>
+        <div id="balance-needle"></div>
+      </div>
+    </div>
+
+    <!-- Liquido carregado -->
+    <div id="hud-liquid" style="display:none">
+      <div class="bar-label">🥤 LÍQUIDO</div>
+      <div class="bar thin"><div id="hud-liquid-fill" class="bar-fill" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <!-- Joystick -->
+  <div id="joystick"><div id="joystick-knob"></div></div>
+
+  <!-- Botao de acao contextual -->
+  <button id="action-btn" style="display:none">ATENDER</button>
+
+  <!-- Botao recalibrar sensores -->
+  <button id="sensor-btn" title="Calibrar sensores">🎚️</button>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <!-- ===================== OVERLAYS ===================== -->
+  <div class="overlay" id="overlay-start" style="display:flex">
+    <div class="card">
+      <h1>GARÇOM</h1>
+      <h2>Desafio dos Copos</h2>
+      <p>Atenda as mesas, busque os pedidos no bar e na cozinha e
+         <b>equilibre a bandeja inclinando o celular</b> sem derramar os copos.</p>
+      <ul class="how">
+        <li>🕹️ Joystick (canto inferior esquerdo) move o garçom</li>
+        <li>📱 Incline o celular para equilibrar a bandeja</li>
+        <li>👉 Toque no botão laranja para Atender / Retirar / Entregar / Limpar</li>
+        <li>⌨️ No PC: WASD move · I/J/K/L inclina · Shift corre</li>
+      </ul>
+      <button id="start-btn" class="big-btn">▶ COMEÇAR</button>
+      <p class="tiny">No celular será pedida permissão para usar os sensores de movimento.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay-levelup" style="display:none">
+    <div class="card">
+      <h1>NÍVEL CONCLUÍDO! ✅</h1>
+      <p>Próximo: <b>Nível <span id="next-level-num">2</span></b> — mais movimento, corredores mais apertados.</p>
+      <button id="next-level-btn" class="big-btn">PRÓXIMO NÍVEL ▶</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay-gameover" style="display:none">
+    <div class="card">
+      <h1>NÍVEL FALHOU ❌</h1>
+      <p>A reputação chegou a zero!</p>
+      <p class="stats" id="gameover-stats"></p>
+      <button id="restart-btn" class="big-btn">TENTAR NOVAMENTE</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay-win" style="display:none">
+    <div class="card">
+      <h1>🏆 CAOS DOMINADO!</h1>
+      <p>Você venceu os 20 níveis do restaurante lotado. Lenda!</p>
+      <button id="win-restart-btn" class="big-btn">JOGAR DE NOVO</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
