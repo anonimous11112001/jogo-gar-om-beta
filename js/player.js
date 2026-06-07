@@ -12,7 +12,8 @@ export class Player {
     this.camera = camera;
     this.restaurant = restaurant;
     this.pos = new THREE.Vector3(0, 0, 8);
-    this.heading = Math.PI;        // virado para o salao
+    this.heading = Math.PI;        // direcao para onde o garcom anda (segue o movimento)
+    this.camYaw = Math.PI;         // angulo da camera ao redor do garcom (giravel 360)
     this.speed = 0;
     this.state = 'idle';
     this._bob = 0;
@@ -58,14 +59,17 @@ export class Player {
   }
 
   update(dt, input) {
+    // giro da camera ao redor do garcom (independente do movimento)
+    this.camYaw += input.consumeLookYaw();
+
     const m = input.move;
     const mag = Math.hypot(m.x, m.y);
 
     if (mag > 0.05) {
-      // Joystick relativo à câmera: rotaciona o vetor (m.x, m.y) pelo heading atual
-      // para que "cima no joystick" sempre signifique "avançar na direção atual".
-      const wx = -m.x * Math.cos(this.heading) - m.y * Math.sin(this.heading);
-      const wz =  m.x * Math.sin(this.heading) - m.y * Math.cos(this.heading);
+      // Movimento relativo à câmera: "cima no joystick" = andar para onde a
+      // câmera aponta (para longe dela), deixando as costas do garçom para a câmera.
+      const wx = -m.x * Math.cos(this.camYaw) - m.y * Math.sin(this.camYaw);
+      const wz =  m.x * Math.sin(this.camYaw) - m.y * Math.cos(this.camYaw);
       const targetHeading = Math.atan2(wx, wz);
       // interpola heading pelo caminho mais curto
       let diff = targetHeading - this.heading;
@@ -107,8 +111,8 @@ export class Player {
   }
 
   _updateCamera() {
-    const cx = this.pos.x - Math.sin(this.heading) * CONFIG.camDistance;
-    const cz = this.pos.z - Math.cos(this.heading) * CONFIG.camDistance;
+    const cx = this.pos.x - Math.sin(this.camYaw) * CONFIG.camDistance;
+    const cz = this.pos.z - Math.cos(this.camYaw) * CONFIG.camDistance;
     const target = new THREE.Vector3(cx, CONFIG.camHeight, cz);
     this.camera.position.lerp(target, CONFIG.camLerp);
     this.camera.lookAt(this.pos.x, 1.3, this.pos.z);

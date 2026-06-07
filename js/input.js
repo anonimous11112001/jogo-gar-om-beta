@@ -10,6 +10,9 @@ export class InputManager {
     this.move = { x: 0, y: 0 };
     this.running = false;
 
+    // Giro da camera: pixels horizontais acumulados desde o ultimo consumo
+    this.lookDX = 0;
+
     // Inclinacao do device para a bandeja (rad). tiltX = frente/tras, tiltZ = esq/dir
     this.tiltX = 0;
     this.tiltZ = 0;
@@ -22,6 +25,7 @@ export class InputManager {
     this._desktopTilt = { x: 0, z: 0 };
 
     this._initJoystick();
+    this._initLookPad();
     this._initKeyboard();
     this._initDesktopTilt();
   }
@@ -54,8 +58,14 @@ export class InputManager {
       // remapeia [DEAD,1] -> [0,1] e aplica curva suave (menos sensivel perto do centro)
       const t = Math.min((mag - DEAD) / (1 - DEAD), 1);
       const curved = t * t;
-      this.move.x = (nx / mag) * curved;
-      this.move.y = (ny / mag) * curved;
+      let mx = (nx / mag) * curved;
+      let my = (ny / mag) * curved;
+      // VIES PRA FRENTE/TRAS: quando o eixo vertical domina, reduz o desvio
+      // lateral para facilitar andar reto (cada milimetro lateral nao joga pro lado).
+      const ax = Math.abs(mx), ay = Math.abs(my);
+      if (ay > ax && ay > 0.0001) mx *= ax / ay;
+      this.move.x = mx;
+      this.move.y = my;
       // correr so quando quase no limite da base
       this.running = mag > 0.9;
     };
@@ -80,6 +90,43 @@ export class InputManager {
     base.addEventListener('mousedown', (e) => { start(e.clientX, e.clientY, 'm'); moveTo(e.clientX, e.clientY); });
     window.addEventListener('mousemove', (e) => moveTo(e.clientX, e.clientY));
     window.addEventListener('mouseup', () => { if (id === 'm') end(); });
+  }
+
+  // --- Area de girar a camera (arraste horizontal no meio-superior) --------
+  _initLookPad() {
+    const pad = document.getElementById('look-pad');
+    if (!pad) return;
+    let active = false, id = null, lastX = 0;
+    const start = (x, pid) => { active = true; id = pid; lastX = x; };
+    const move = (x) => { if (!active) return; this.lookDX += (x - lastX); lastX = x; };
+    const end = () => { active = false; id = null; };
+
+    pad.addEventListener('touchstart', (e) => {
+      const t = e.changedTouches[0]; start(t.clientX, t.identifier); e.preventDefault();
+    }, { passive: false });
+    pad.addEventListener('touchmove', (e) => {
+      for (const t of e.changedTouches) if (t.identifier === id) move(t.clientX);
+      e.preventDefault();
+    }, { passive: false });
+    pad.addEventListener('touchend', (e) => {
+      for (const t of e.changedTouches) if (t.identifier === id) end();
+    });
+    // mouse (desktop)
+    pad.addEventListener('mousedown', (e) => { start(e.clientX, 'm'); });
+    window.addEventListener('mousemove', (e) => { if (active && id === 'm') move(e.clientX); });
+    window.addEventListener('mouseup', () => { if (id === 'm') end(); });
+  }
+
+  // Retorna quanto a camera deve girar neste frame (radianos) e zera o acumulado.
+  consumeLookYaw() {
+    const SENS = 0.005;                 // rad por pixel arrastado
+    let yaw = this.lookDX * SENS;
+    this.lookDX = 0;
+    // teclado: Q/E giram a camera no desktop
+    const k = this._keys;
+    if (k['q']) yaw -= 0.045;
+    if (k['e']) yaw += 0.045;
+    return yaw;
   }
 
   // --- Teclado (fallback desktop) -----------------------------------------

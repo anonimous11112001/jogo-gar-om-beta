@@ -37,24 +37,31 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #14100e;
 #hud-liquid { position: absolute; bottom: 64px; left: 50%; transform: translateX(-50%); width: 200px; text-align: center; }
 
 /* ---------- Joystick ---------- */
-#joystick { position: fixed; left: 26px; bottom: 32px; width: 130px; height: 130px;
+#joystick { position: fixed; left: 64px; bottom: 96px; width: 130px; height: 130px;
   border-radius: 50%; background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.25);
-  pointer-events: auto; touch-action: none; }
+  pointer-events: auto; touch-action: none; z-index: 30; }
 #joystick-knob { position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; margin: -29px 0 0 -29px;
   border-radius: 50%; background: rgba(255,255,255,.55); border: 2px solid rgba(255,255,255,.8);
   transition: transform .03s; }
+
+/* ---------- Area para girar a camera (toque/arraste no meio-superior) ---------- */
+#look-pad { position: fixed; left: 0; right: 0; top: 118px; height: 32vh;
+  pointer-events: auto; touch-action: none; z-index: 5; }
+#look-pad .look-hint { position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; font-weight: 700; color: rgba(255,255,255,.5); letter-spacing: .5px;
+  background: rgba(0,0,0,.3); padding: 4px 12px; border-radius: 14px; white-space: nowrap; }
 
 /* ---------- Botoes ---------- */
 #action-btn { position: fixed; right: 28px; bottom: 48px; min-width: 130px; height: 130px;
   border-radius: 50%; border: 3px solid rgba(255,255,255,.85); background: #ff7a00; color: #fff;
   font-size: 17px; font-weight: 800; letter-spacing: .5px; pointer-events: auto; cursor: pointer;
   box-shadow: 0 6px 18px rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center;
-  text-align: center; padding: 8px; line-height: 1.1; animation: pulse 1.2s infinite; }
+  text-align: center; padding: 8px; line-height: 1.1; animation: pulse 1.2s infinite; z-index: 30; }
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 
 #sensor-btn { position: fixed; right: 14px; top: 50%; transform: translateY(-50%);
   width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25);
-  background: rgba(0,0,0,.5); color: #fff; font-size: 18px; pointer-events: auto; cursor: pointer; }
+  background: rgba(0,0,0,.5); color: #fff; font-size: 18px; pointer-events: auto; cursor: pointer; z-index: 30; }
 
 /* ---------- Toast ---------- */
 #toast { position: fixed; top: 96px; left: 50%; transform: translateX(-50%);
@@ -81,6 +88,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #14100e;
 .big-btn:active { transform: scale(.97); }
 
 @media (max-width: 480px) {
-  #joystick { width: 110px; height: 110px; left: 18px; bottom: 24px; }
+  #joystick { width: 110px; height: 110px; left: 48px; bottom: 92px; }
   #action-btn { width: 110px; height: 110px; min-width: 110px; right: 18px; bottom: 36px; font-size: 15px; }
 }
