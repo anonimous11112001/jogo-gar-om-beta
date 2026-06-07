@@ -119,7 +119,7 @@ export class InputManager {
 
   // Retorna quanto a camera deve girar neste frame (radianos) e zera o acumulado.
   consumeLookYaw() {
-    const SENS = 0.005;                 // rad por pixel arrastado
+    const SENS = 0.007;                 // rad por pixel arrastado
     let yaw = this.lookDX * SENS;
     this.lookDX = 0;
     // teclado: Q/E giram a camera no desktop
