@@ -78,12 +78,23 @@ $('win-restart-btn')?.addEventListener('click', () => {
   game.startLevel(1);
 });
 
-// --- Resize ---
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+// --- Resize / orientacao ---
+// Em retrato (celular de pe) a tela e estreita: alargamos o FOV e afastamos a
+// camera para nao ficar com zoom excessivo e perder a visao do salao.
+function applyViewport() {
+  const w = window.innerWidth, h = window.innerHeight;
+  const aspect = w / h;
+  camera.aspect = aspect;
+  const portrait = h > w;
+  camera.fov = portrait ? 74 : 60;
+  player.camDistMul = portrait ? 1.5 : 1.0;
+  player.camHeightMul = portrait ? 1.15 : 1.0;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+  renderer.setSize(w, h);
+}
+window.addEventListener('resize', applyViewport);
+window.addEventListener('orientationchange', applyViewport);
+applyViewport();
 
 // --- Loop ---
 const clock = new THREE.Clock();

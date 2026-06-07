@@ -14,6 +14,9 @@ export class Player {
     this.pos = new THREE.Vector3(0, 0, 8);
     this.heading = Math.PI;        // direcao para onde o garcom anda (segue o movimento)
     this.camYaw = Math.PI;         // angulo da camera ao redor do garcom (giravel 360)
+    // multiplicadores de camera (ajustados por orientacao: retrato afasta a camera)
+    this.camDistMul = 1;
+    this.camHeightMul = 1;
     this.speed = 0;
     this.state = 'idle';
     this._bob = 0;
@@ -111,9 +114,10 @@ export class Player {
   }
 
   _updateCamera() {
-    const cx = this.pos.x - Math.sin(this.camYaw) * CONFIG.camDistance;
-    const cz = this.pos.z - Math.cos(this.camYaw) * CONFIG.camDistance;
-    const target = new THREE.Vector3(cx, CONFIG.camHeight, cz);
+    const dist = CONFIG.camDistance * this.camDistMul;
+    const cx = this.pos.x - Math.sin(this.camYaw) * dist;
+    const cz = this.pos.z - Math.cos(this.camYaw) * dist;
+    const target = new THREE.Vector3(cx, CONFIG.camHeight * this.camHeightMul, cz);
     this.camera.position.lerp(target, CONFIG.camLerp);
     this.camera.lookAt(this.pos.x, 1.3, this.pos.z);
   }
