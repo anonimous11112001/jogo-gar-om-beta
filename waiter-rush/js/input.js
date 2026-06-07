@@ -45,10 +45,19 @@ export class InputManager {
       const len = Math.hypot(dx, dy);
       if (len > R) { dx = dx / len * R; dy = dy / len * R; }
       knob.style.transform = `translate(${dx}px, ${dy}px)`;
-      this.move.x = dx / R;
-      this.move.y = dy / R;
-      // empurrar o joystick ate a borda = correr
-      this.running = len > R * 0.85;
+      // magnitude normalizada 0..1
+      const nx = dx / R, ny = dy / R;
+      const mag = Math.hypot(nx, ny);
+      // zona morta: toques pequenos nao movem (evita drift e excesso de sensibilidade)
+      const DEAD = 0.18;
+      if (mag < DEAD) { this.move.x = 0; this.move.y = 0; this.running = false; return; }
+      // remapeia [DEAD,1] -> [0,1] e aplica curva suave (menos sensivel perto do centro)
+      const t = Math.min((mag - DEAD) / (1 - DEAD), 1);
+      const curved = t * t;
+      this.move.x = (nx / mag) * curved;
+      this.move.y = (ny / mag) * curved;
+      // correr so quando quase no limite da base
+      this.running = mag > 0.9;
     };
     const end = () => {
       active = false; id = null;

@@ -17,6 +17,7 @@ class TrayItem {
     this.ox = 0; this.oz = 0;
     this.vx = 0; this.vz = 0;
     this.fallen = false;
+    this.orderId = null;   // a qual pedido este item pertence (null = lixo/avulso)
     this.liquid = this.type.liquid ? 100 : -1;  // % ; -1 = nao tem liquido
     this.spilling = false;
     this._buildMesh();
@@ -25,6 +26,22 @@ class TrayItem {
   _buildMesh() {
     const t = this.type;
     this.group = new THREE.Group();
+    if (t.trash) {
+      // saco de lixo amassado
+      const bag = new THREE.Mesh(
+        new THREE.SphereGeometry(t.radius, 8, 6),
+        new THREE.MeshStandardMaterial({ color: t.color, roughness: 0.95 })
+      );
+      bag.position.y = t.radius; bag.scale.y = 1.1;
+      this.group.add(bag);
+      const knot = new THREE.Mesh(
+        new THREE.ConeGeometry(t.radius * 0.4, t.radius * 0.6, 6),
+        new THREE.MeshStandardMaterial({ color: t.color })
+      );
+      knot.position.y = t.radius * 2;
+      this.group.add(knot);
+      return;
+    }
     if (t.liquid) {
       // recipiente translucido
       const glass = new THREE.Mesh(
@@ -86,8 +103,9 @@ export class Tray {
   get itemCount() { return this.items.length; }
   get isEmpty() { return this.items.length === 0; }
 
-  load(typeKey) {
+  load(typeKey, orderId = null) {
     const item = new TrayItem(typeKey);
+    item.orderId = orderId;
     // distribui em circulo para nao sobrepor
     const n = this.items.length;
     const ang = n * 1.7;
@@ -99,6 +117,10 @@ export class Tray {
     return item;
   }
 
+  // coloca um saco de lixo na bandeja (vem da limpeza de uma mesa)
+  loadTrash() { return this.load('lixo', null); }
+  get hasTrash() { return this.items.some(it => it.type.trash); }
+
   // Remove e retorna o estado dos itens entregues (para calcular gorjeta).
   unloadAll() {
     const delivered = this.items.map(it => ({
@@ -107,6 +129,25 @@ export class Tray {
     for (const it of this.items) this.group.remove(it.group);
     this.items = [];
     return delivered;
+  }
+
+  // Descarrega apenas os itens de um pedido especifico (entrega individual).
+  unloadForOrder(orderId) {
+    const mine = this.items.filter(it => it.orderId === orderId && !it.type.trash);
+    const delivered = mine.map(it => ({
+      typeKey: it.typeKey, liquid: it.liquid, fallen: it.fallen,
+    }));
+    for (const it of mine) this.group.remove(it.group);
+    this.items = this.items.filter(it => !(it.orderId === orderId && !it.type.trash));
+    return delivered;
+  }
+
+  // Descarta o lixo (na lixeira). Retorna quantos sacos foram jogados fora.
+  unloadTrash() {
+    const trash = this.items.filter(it => it.type.trash);
+    for (const it of trash) this.group.remove(it.group);
+    this.items = this.items.filter(it => !it.type.trash);
+    return trash.length;
   }
 
   update(dt, input) {
